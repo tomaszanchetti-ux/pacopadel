@@ -28,6 +28,7 @@
     color-scheme:light;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   html{scroll-behavior:smooth}
   body{margin:0;background:var(--bg);color:var(--text);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
   body.locked{overflow:hidden}
@@ -215,6 +216,13 @@
   .guide .g span{color:var(--muted);font-size:14px}
   .guide .g a{color:var(--text)}
   .court{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
+  .spot{cursor:pointer}
+  .spot circle{fill:rgba(255,255,255,.14);stroke:#FFFFFF;stroke-width:2}
+  .spot text{font:800 13px "Barlow Condensed",sans-serif;fill:#FFFFFF;pointer-events:none}
+  .spot:hover circle,.spot:focus-visible circle{stroke:var(--ball)}
+  .spot.on circle{fill:var(--ball);stroke:var(--ball)}
+  .spot.on text{fill:#0B1020}
+  .spot:focus-visible{outline:none}
 
   @media (min-width:700px){
     .wrap{padding-inline:24px}
@@ -522,25 +530,37 @@
       <h3>Sube tu partido</h3>
       <p class="sub">Para que Paco pueda analizarlo, el video tiene que estar grabado así:</p>
       <div class="stepper"><i class="on"></i><i class="on"></i><i class="on"></i></div>
-      <svg class="court" viewBox="0 0 360 200" role="img" aria-label="Esquema: móvil detrás del cristal de fondo, centrado y en alto, mirando a toda la pista" style="margin-top:10px">
-        <rect x="70" y="18" width="220" height="130" rx="4" fill="var(--court)" opacity=".9"/>
-        <g stroke="#FFFFFF" stroke-width="1.6" fill="none" opacity=".85"><rect x="70" y="18" width="220" height="130"/><line x1="70" y1="83" x2="290" y2="83" stroke-width="3"/><line x1="180" y1="18" x2="180" y2="148"/><line x1="70" y1="50" x2="290" y2="50"/><line x1="70" y1="116" x2="290" y2="116"/></g>
-        <g fill="none" stroke="var(--ball)" stroke-width="2" stroke-dasharray="5 4"><path d="M180 178 L70 18"/><path d="M180 178 L290 18"/></g>
-        <rect x="168" y="166" width="24" height="16" rx="3" fill="var(--ball)"/>
-        <circle cx="180" cy="174" r="2.5" fill="#0B1020"/>
-        <text x="180" y="196" text-anchor="middle" style="font:600 11px Barlow,sans-serif;fill:var(--muted)">móvil detrás del cristal de fondo, centrado y en alto</text>
-        <text x="180" y="12" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">se tiene que ver el cristal de enfrente entero</text>
+      <svg class="court" viewBox="0 0 260 340" role="img" aria-label="Esquema: móvil detrás del cristal de fondo, centrado y en alto, mirando a toda la pista" style="margin:10px auto 0;max-width:250px">
+        <text x="130" y="14" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">cristal de enfrente: se tiene que ver entero</text>
+        <rect x="70" y="24" width="120" height="240" rx="3" fill="var(--court)" opacity=".9"/>
+        <g stroke="#FFFFFF" stroke-width="1.6" fill="none" opacity=".85"><rect x="70" y="24" width="120" height="240"/><line x1="70" y1="144" x2="190" y2="144" stroke-width="3"/><line x1="70" y1="60" x2="190" y2="60"/><line x1="70" y1="228" x2="190" y2="228"/><line x1="130" y1="60" x2="130" y2="228"/></g>
+        <g fill="none" stroke="var(--ball)" stroke-width="2" stroke-dasharray="5 4"><path d="M130 292 L70 24"/><path d="M130 292 L190 24"/></g>
+        <rect x="118" y="284" width="24" height="16" rx="3" fill="var(--ball)"/><circle cx="130" cy="292" r="2.5" fill="#0B1020"/>
+        <text x="130" y="316" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">móvil detrás del cristal de fondo,</text>
+        <text x="130" y="330" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">centrado y en alto</text>
       </svg>
       <div class="guide">
         <div class="g"><i>1</i><div><b>Detrás del cristal de fondo, centrado</b><span>Justo en el medio, pegado al cristal, mirando hacia la pista completa.</span></div></div>
         <div class="g"><i>2</i><div><b>Lo más alto que puedas</b><span>Un soporte con ventosas en el cristal, como <a href="https://www.amazon.es/dp/B0G2SFJPKD" target="_blank" rel="noopener">este de Amazon</a>, colocado a 2 metros o más. Sin soporte, apoyado en lo alto de la valla.</span></div></div>
         <div class="g"><i>3</i><div><b>Horizontal, sin zoom, sin moverlo</b><span>Que se vean las cuatro esquinas y el cristal de enfrente entero. Bloquea el enfoque y no lo toques hasta el final.</span></div></div>
-        <div class="g"><i>4</i><div><b>Partido completo en 1080p</b><span>Batería llena y unos 8 GB libres para hora y media. Modo avión para que no te corte una llamada.</span></div></div>
+        <div class="g"><i>4</i><div><b>Partido completo en 1080p, no en 4K</b><span>En iPhone, formato «Alta eficiencia» (HEVC): hora y media ocupa unos 4 GB en vez de 8. Batería llena, espacio libre y modo avión.</span></div></div>
       </div>
       <div id="upnote" class="msg ok" style="margin-top:14px" hidden>Plaza reservada. Estamos abriendo la subida de videos: en las próximas 48 horas te mandamos el enlace por email para subir tu partido.</div>
       <form id="upform" style="margin-top:14px" novalidate>
-        <div class="field"><label for="lado">¿En qué lado juegas en este partido?</label>
-          <select id="lado" name="lado"><option value="">Elige uno</option><option>Izquierda (revés)</option><option>Derecha (drive)</option></select>
+        <div class="field">
+          <label>¿Dónde empiezas el partido? Toca tu posición.</label>
+          <svg class="court picker" id="picker" viewBox="0 0 260 300" role="group" aria-label="Elige tu posición inicial en la pista" style="margin:0 auto;max-width:250px">
+            <text x="130" y="14" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">lado contrario al móvil</text>
+            <rect x="70" y="24" width="120" height="240" rx="3" fill="var(--court)" opacity=".9"/>
+            <g stroke="#FFFFFF" stroke-width="1.6" fill="none" opacity=".85"><rect x="70" y="24" width="120" height="240"/><line x1="70" y1="144" x2="190" y2="144" stroke-width="3"/><line x1="70" y1="60" x2="190" y2="60"/><line x1="70" y1="228" x2="190" y2="228"/><line x1="130" y1="60" x2="130" y2="228"/></g>
+            <g class="spot" data-inicio="lejos-izq" data-lado="Derecha (drive)" tabindex="0" role="button" aria-label="Lado contrario, a la izquierda de la pantalla"><circle cx="100" cy="100" r="16"/><text x="100" y="104" text-anchor="middle">D</text></g>
+            <g class="spot" data-inicio="lejos-der" data-lado="Izquierda (revés)" tabindex="0" role="button" aria-label="Lado contrario, a la derecha de la pantalla"><circle cx="160" cy="100" r="16"/><text x="160" y="104" text-anchor="middle">R</text></g>
+            <g class="spot" data-inicio="cerca-izq" data-lado="Izquierda (revés)" tabindex="0" role="button" aria-label="Lado del móvil, a la izquierda de la pantalla"><circle cx="100" cy="190" r="16"/><text x="100" y="194" text-anchor="middle">R</text></g>
+            <g class="spot" data-inicio="cerca-der" data-lado="Derecha (drive)" tabindex="0" role="button" aria-label="Lado del móvil, a la derecha de la pantalla"><circle cx="160" cy="190" r="16"/><text x="160" y="194" text-anchor="middle">D</text></g>
+            <rect x="118" y="278" width="24" height="16" rx="3" fill="var(--ball)"/><circle cx="130" cy="286" r="2.5" fill="#0B1020"/>
+            <text x="100" y="278" text-anchor="end" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">lado del móvil</text>
+          </svg>
+          <p id="pick-text" class="consent" style="text-align:center">R = revés (izquierda) · D = drive (derecha). Se cambia de lado en los juegos impares; Paco sigue la rotación desde tu posición inicial.</p>
         </div>
         <label class="drop" id="drop" for="file"><b>Toca para elegir el video</b><span>o arrástralo aquí · MP4 o MOV · hasta 10 GB</span><input id="file" type="file" accept="video/mp4,video/quicktime,.mp4,.mov"></label>
         <div id="upstate" hidden>
@@ -661,6 +681,19 @@
   drop.addEventListener("drop", function (e) { if (e.dataTransfer.files[0]) startUpload(e.dataTransfer.files[0]); });
   file.addEventListener("change", function () { if (file.files[0]) startUpload(file.files[0]); });
 
+  var inicio = null, lado = null;
+  var spots = document.querySelectorAll("#picker .spot");
+  function pick(g) {
+    spots.forEach(function (x) { x.classList.remove("on"); }); g.classList.add("on");
+    inicio = g.dataset.inicio; lado = g.dataset.lado;
+    $("pick-text").textContent = "Empiezas en el " + (inicio.indexOf("cerca") === 0 ? "lado del móvil" : "lado contrario al móvil") + ", jugando la " + lado.toLowerCase() + ".";
+    $("msg3").hidden = true;
+  }
+  spots.forEach(function (g) {
+    g.addEventListener("click", function () { pick(g); });
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(g); } });
+  });
+
   function fmt(b) { return b > 1e9 ? (b/1e9).toFixed(1) + " GB" : Math.round(b/1e6) + " MB"; }
   function setProgress(p) { $("fpct").textContent = Math.round(p) + "%"; $("fbar").style.width = p + "%"; }
 
@@ -668,16 +701,16 @@
     var ok = /\.(mp4|mov)$/i.test(f.name) || /video\/(mp4|quicktime)/.test(f.type);
     if (!ok) { show("msg3","err","Solo MP4 o MOV. Si lo grabaste con el móvil, es uno de los dos."); return; }
     if (f.size > 10 * 1024 * 1024 * 1024) { show("msg3","err","El archivo pasa de 10 GB. Graba en 1080p, no en 4K."); return; }
-    if (!$("lado").value) { show("msg3","err","Dinos en qué lado juegas en este partido."); $("lado").focus(); return; }
+    if (!inicio) { show("msg3","err","Toca en la pista dónde empiezas el partido."); $("picker").scrollIntoView({ block: "center" }); return; }
     $("msg3").hidden = true; $("upstate").hidden = false; $("fname").textContent = f.name + " · " + fmt(f.size); setProgress(0);
     drop.style.display = "none";
-    var meta = { lado: $("lado").value, nombreArchivo: f.name, bytes: f.size };
+    var meta = { lado: lado, inicio: inicio, nombreArchivo: f.name, bytes: f.size };
     if (DEMO) { // simulación
       var p = 0, t = setInterval(function () { p = Math.min(100, p + 4 + Math.random() * 6); setProgress(p); if (p >= 100) { clearInterval(t); finishUpload("demo/" + f.name, meta); } }, 120);
       return;
     }
     var path = "uploads/" + signup.id + "/" + Date.now() + "_" + f.name.replace(/[^\w.\-]+/g, "_");
-    var task = storage.ref(path).put(f, { contentType: f.type || "video/mp4", customMetadata: { signupId: signup.id, email: signup.email, lado: meta.lado } });
+    var task = storage.ref(path).put(f, { contentType: f.type || "video/mp4", customMetadata: { signupId: signup.id, email: signup.email, lado: meta.lado, inicio: meta.inicio } });
     task.on("state_changed", function (s) { setProgress(s.bytesTransferred / s.totalBytes * 100); }, function (err) {
       console.error(err); show("msg3","err","La subida se cortó. Vuelve a elegir el archivo y la retomamos."); drop.style.display = "";
     }, function () { finishUpload(path, meta); });

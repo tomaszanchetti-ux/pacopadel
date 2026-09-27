@@ -12,7 +12,7 @@ service cloud.firestore {
         && request.resource.data.estado == 'apuntado';
       // Solo se pueden tocar los campos del video, nunca nombre/email.
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['tieneVideo','videoPath','estado','lado','nombreArchivo','bytes','subido']);
+        .hasOnly(['tieneVideo','videoPath','estado','lado','inicio','nombreArchivo','bytes','subido']);
       allow delete: if false;
     }
   }
