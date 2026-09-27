@@ -620,6 +620,11 @@
     }
   } catch (e) { console.warn("Firebase no disponible, modo demo", e); }
 
+  // Contador anónimo de visitas y clics (sin cookies, sin datos personales): stats/AAAA-MM-DD
+  var statsRef = null;
+  function stat(campo) { if (!statsRef) return; var u = {}; u[campo] = firebase.firestore.FieldValue.increment(1); statsRef.set(u, { merge: true }).catch(function () {}); }
+  if (!DEMO) { statsRef = db.collection("stats").doc(new Date().toISOString().slice(0, 10)); stat("vistas"); }
+
   var $ = function (id) { return document.getElementById(id); };
   var flow = $("flow"), steps = ["step1","step2","step3","step4"];
   var signup = null; // {id, nombre, apellido, email}
@@ -632,7 +637,7 @@
     else { go("step1"); setTimeout(function(){ $("nombre").focus(); }, 50); }
   }
   function close() { flow.hidden = true; document.body.classList.remove("locked"); }
-  document.querySelectorAll(".js-open").forEach(function (b) { b.addEventListener("click", open); });
+  document.querySelectorAll(".js-open").forEach(function (b) { b.addEventListener("click", function () { stat("clicsCTA"); open(); }); });
   $("flow-close").addEventListener("click", close);
   $("done").addEventListener("click", close);
   flow.addEventListener("click", function (e) { if (e.target === flow) close(); });
@@ -656,7 +661,7 @@
         var ref = await db.collection("signups").add(Object.assign({}, data, { creado: firebase.firestore.FieldValue.serverTimestamp() }));
         id = ref.id;
       } else { id = "demo-" + Date.now(); }
-      signup = { id: id, nombre: nombre, apellido: apellido, email: email };
+      signup = { id: id, nombre: nombre, apellido: apellido, email: email }; stat("altas");
       try { localStorage.setItem("paco_signup", JSON.stringify(signup)); } catch (_) {}
       $("hola").textContent = nombre; $("hola2").textContent = nombre; go("step2");
     } catch (err) {
@@ -725,6 +730,7 @@
     }, function () { finishUpload(path, meta); });
   }
   function finishUpload(path, meta) {
+    stat("videos");
     updateSignup(Object.assign({ videoPath: path, estado: "video-subido", subido: DEMO ? new Date().toISOString() : firebase.firestore.FieldValue.serverTimestamp() }, meta));
     $("hola2").textContent = signup ? signup.nombre : "";
     $("bye").textContent = "Video recibido. Paco se pone con él y en 24 horas te llega la revisión a " + (signup ? signup.email : "tu email") + ".";
