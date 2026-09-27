@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paco · Padel Coach</title>
+<meta name="description" content="Paco es tu Padel Coach con IA. Sube el video de tu partido y recibe la revisión 360°: tus errores marcados, la jugada correcta, estadísticas y tu evolución.">
+<meta property="og:title" content="Paco · Padel Coach powered by AI">
+<meta property="og:description" content="Watch your mistakes. Follow your stats. Get better.">
+<meta property="og:image" content="poster.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#0B1020; --surface:#141B31; --surface-2:#1B2340; --line:#26304F; --text:#EEF1F8; --muted:#9BA5BE;
+    --court:#2452E0; --court-soft:#1B3BAA; --ball:#E9F53A; --red:#FF5A5A; --green:#3EE07A;
+    --cta-bg:#E9F53A; --cta-fg:#0B1020; --input:#0F1529;
+    --app-bg:#0E1428; --app-card:#171F38; --bar-a:#5B8CFF; --bar-b:#33405F;
+    --overlay:rgba(4,7,16,.72);
+    color-scheme:dark;
+  }
+  :root[data-theme="light"]{
+    --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#EEF1F8; --line:#DDE2EE; --text:#0F1526; --muted:#5B6478;
+    --court:#1E46C4; --court-soft:#E3E9FB; --ball:#B9C400; --red:#D93A3A; --green:#1E9E52;
+    --cta-bg:#1E46C4; --cta-fg:#FFFFFF; --input:#FFFFFF;
+    --app-bg:#F6F7FB; --app-card:#FFFFFF; --bar-a:#2F5FE0; --bar-b:#D6DCEA;
+    --overlay:rgba(15,21,38,.55);
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  body.locked{overflow:hidden}
+  .wrap{max-width:1080px;margin:0 auto;padding-inline:18px;padding-block:0}
+  h1,h2,h3,h4{font-family:"Barlow Condensed","Arial Narrow",Impact,sans-serif;text-wrap:balance;margin:0;line-height:1.02}
+  h1{font-size:clamp(38px,8.5vw,72px);font-weight:800;letter-spacing:-.01em}
+  h2{font-size:clamp(30px,6vw,48px);font-weight:700}
+  h3{font-size:23px;font-weight:700}
+  p{margin:0}
+  a{color:inherit}
+  .eyebrow{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .num{font-variant-numeric:tabular-nums}
+  .example{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+  /* header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px;position:sticky;top:env(safe-area-inset-top,0px);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);z-index:20}
+  .brand{display:inline-flex;align-items:center;gap:2px;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:30px;letter-spacing:.06em;text-decoration:none;line-height:1;color:var(--ball)}
+  .brand small{font-family:"Barlow",sans-serif;font-weight:600;font-size:10px;letter-spacing:.16em;color:var(--muted);margin-left:9px;text-transform:uppercase}
+  nav{display:none;gap:22px;font-weight:500;font-size:16px}
+  nav a{text-decoration:none;color:var(--muted)}
+  nav a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 22px;border-radius:12px;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:21px;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;border:0;cursor:pointer;background:var(--cta-bg);color:var(--cta-fg);width:100%}
+  .btn.small{padding:10px 14px;font-size:16px;width:auto}
+  .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn:disabled{opacity:.6;cursor:default}
+  .btn:focus-visible,input:focus-visible,select:focus-visible,nav a:focus-visible,.close:focus-visible{outline:3px solid var(--court);outline-offset:2px}
+
+  /* hero */
+  .hero{padding-block:28px 10px;display:grid;gap:22px}
+  .hero .logo{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:clamp(64px,17vw,124px);line-height:.9;letter-spacing:.04em;color:var(--ball)}
+  .hero .tag{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(20px,5vw,30px);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+  .hero .slogan{font-size:clamp(24px,6.2vw,44px);font-weight:800;line-height:1.08;margin-top:22px}
+  .hero .slogan b{color:var(--ball);font-weight:800}
+  .hero .lead{font-size:18px;color:var(--muted);max-width:32em;margin-top:16px}
+  .hero .actions{display:grid;gap:10px;margin-top:22px}
+  .hero .note{font-size:14px;color:var(--muted);text-align:center}
+  .video{position:relative;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(0,0,0,.7);margin:0}
+  .video video{display:block;width:100%;height:auto;max-width:100%}
+  .video figcaption{padding:12px 14px;font-size:14px;color:var(--muted);background:var(--surface);border-top:1px solid var(--line)}
+  .legend{display:flex;gap:12px 22px;flex-wrap:wrap;font-size:14px;padding-block:14px 26px}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .legend i{width:24px;height:6px;border-radius:3px;display:inline-block}
+  .legend .r i{background:var(--red)} .legend .g i{background:var(--green)}
+
+  section{padding-block:48px;border-top:1px solid var(--line)}
+  .sec-head{max-width:38em;margin-bottom:26px}
+  .sec-head p{margin-top:10px;color:var(--muted);font-size:17px}
+
+  /* steps */
+  .steps{display:grid;gap:14px}
+  .step{padding:20px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:start}
+  .step .n{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:40px;line-height:1;color:var(--ball);grid-row:span 2}
+  .step p{color:var(--muted);font-size:16px}
+
+  /* phones */
+  .phones{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:14px;margin-inline:-18px;padding-inline:18px;scrollbar-width:none}
+  .phones::-webkit-scrollbar{display:none}
+  .ph-wrap{flex:0 0 min(78%,300px);scroll-snap-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center}
+  .ph-wrap h3{font-size:24px}
+  .ph-wrap p{color:var(--muted);font-size:15px;max-width:22em}
+  .phone{width:100%;max-width:290px;aspect-ratio:9/19;border-radius:40px;background:#0B1020;border:7px solid #232C4C;padding:9px;box-shadow:0 40px 70px -30px rgba(0,0,0,.8);position:relative}
+  .phone::before{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:34%;height:22px;border-radius:12px;background:#0B1020;z-index:2}
+  .screen{height:100%;border-radius:30px;background:var(--app-bg);overflow:hidden;display:flex;flex-direction:column;font-size:12px;line-height:1.35;color:var(--text);text-align:left;position:relative}
+  .screen::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(to bottom,transparent,var(--app-bg));pointer-events:none}
+  .sb{display:flex;justify-content:space-between;padding:12px 20px 0;font-size:11px;font-weight:600;color:var(--muted)}
+  .app-h{padding:26px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+  .app-h b{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:700}
+  .app-h span{font-size:11px;color:var(--muted)}
+  .app-body{padding:0 12px 14px;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+  .card{background:var(--app-card);border:1px solid var(--line);border-radius:12px;padding:10px 11px}
+  .card .t{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .thumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;background:#000}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+  .thumb .play{position:absolute;inset:0;display:grid;place-items:center}
+  .thumb .play i{width:38px;height:38px;border-radius:50%;background:var(--ball);display:grid;place-items:center}
+  .thumb .play i::after{content:"";border-left:13px solid #0B1020;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}
+  .thumb .dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;padding:2px 6px;border-radius:5px}
+  .mom{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--line)}
+  .mom:first-of-type{border-top:0}
+  .mom .tm{font-variant-numeric:tabular-nums;color:var(--muted);width:30px;font-size:11px}
+  .mom .d{width:8px;height:8px;border-radius:50%;flex:none}
+  .mom .d.r{background:var(--red)} .mom .d.g{background:var(--green)}
+  .mom .l{flex:1;font-weight:500}
+  .mom .tag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .score{display:flex;align-items:center;justify-content:space-between}
+  .score .s{font-family:"Barlow Condensed",sans-serif;font-size:26px;font-weight:800;letter-spacing:.02em}
+  .pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:99px}
+  .pill.g{background:color-mix(in srgb,var(--green) 22%,transparent);color:var(--green)}
+  .seg{display:flex;background:var(--surface-2);border-radius:8px;padding:3px;gap:3px}
+  .seg span{flex:1;text-align:center;padding:5px;border-radius:6px;font-weight:600;color:var(--muted)}
+  .seg span.on{background:var(--app-card);color:var(--text)}
+  .stat{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;padding:5px 0}
+  .stat .lab{font-weight:500}
+  .stat .v{font-variant-numeric:tabular-nums;font-weight:600;font-size:12px}
+  .stat .v small{color:var(--muted);font-weight:500;margin-left:6px}
+  .bars{grid-column:1/-1;display:grid;gap:3px}
+  .bar{height:5px;border-radius:0 3px 3px 0;background:var(--bar-a)}
+  .bar.b{background:var(--bar-b)}
+  .rep{display:flex;gap:8px;align-items:flex-start;padding:5px 0}
+  .rep i{width:16px;height:16px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:1px}
+  .rep i.g{background:var(--green)} .rep i.r{background:var(--red)}
+  .rep i::after{content:"";width:6px;height:6px;border-radius:50%;background:#0B1020}
+  .rep b{display:block;font-weight:600}
+  .rep span{color:var(--muted);font-size:11px}
+  .goal{background:color-mix(in srgb,var(--ball) 14%,var(--app-card));border-color:color-mix(in srgb,var(--ball) 40%,var(--line))}
+  .goal p{font-weight:600;margin-top:3px}
+
+  /* dashboard */
+  .dash{display:grid;gap:14px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+  .tile .t{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .tile .hero-n{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .tile .big{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+  .tile .delta{font-weight:600;color:var(--green)}
+  .tile svg{width:100%;height:auto;display:block}
+  .tile .sub{color:var(--muted);font-size:14px}
+  .prow{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+  .prow:first-of-type{border-top:0}
+  .prow .name{font-weight:600}
+  .prow .pct{font-variant-numeric:tabular-nums;font-weight:600}
+  .prow .pct small{color:var(--muted);font-weight:500;margin-left:6px}
+  .prow .bar{grid-column:1/-1;height:6px;border-radius:0 3px 3px 0}
+  .sides{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .side{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px}
+  .side.best{border-color:color-mix(in srgb,var(--ball) 55%,var(--line));background:color-mix(in srgb,var(--ball) 8%,transparent)}
+  .side .lab{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .side .big{font-size:36px}
+  .side .sub{font-size:13px}
+  .chart-text{font-family:"Barlow",sans-serif;font-size:11px;fill:var(--muted)}
+
+  /* tech */
+  .tech{display:grid;gap:22px}
+  .tech .item{display:flex;flex-direction:column;gap:10px}
+  .tech .ico{width:60px;height:60px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+  .tech .ico svg{width:36px;height:36px}
+  .tech p{color:var(--muted);font-size:16px}
+  .specs{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .spec{font-family:"Barlow Condensed",sans-serif;font-size:14px;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
+
+  /* final CTA */
+  .final{text-align:center;padding-block:56px}
+  .final .plazas{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:clamp(84px,24vw,150px);line-height:.9;color:var(--ball);font-variant-numeric:tabular-nums}
+  .final p{color:var(--muted);font-size:18px;max-width:30em;margin:14px auto 22px}
+
+  footer{padding-block:30px 44px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;display:grid;gap:8px}
+
+  /* flow (modal) */
+  .overlay[hidden]{display:none}
+  .overlay{position:fixed;inset:0;background:var(--overlay);z-index:50;display:flex;align-items:flex-end;justify-content:center;padding:0}
+  .sheet{background:var(--surface);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92dvh;overflow:auto;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));position:relative}
+  .sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-size:20px;line-height:1;cursor:pointer}
+  .sheet h3{font-size:30px;padding-right:44px}
+  .sheet .sub{color:var(--muted);margin-top:8px}
+  .stepper{display:flex;gap:6px;margin:16px 0 18px}
+  .stepper i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+  .stepper i.on{background:var(--ball)}
+  form{display:grid;gap:12px}
+  .field{display:grid;gap:5px}
+  label{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--muted)}
+  input,select{width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--input);color:var(--text);font:inherit;font-size:17px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+  .consent{font-size:13px;color:var(--muted)}
+  .msg{padding:12px 14px;border-radius:9px;font-weight:500;font-size:15px}
+  .msg.ok{background:color-mix(in srgb,var(--green) 18%,transparent);border:1px solid var(--green)}
+  .msg.err{background:color-mix(in srgb,var(--red) 18%,transparent);border:1px solid var(--red)}
+  .choice{display:grid;gap:10px}
+  .choice button{text-align:left;padding:16px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;cursor:pointer;display:grid;gap:3px}
+  .choice button b{font-family:"Barlow Condensed",sans-serif;font-size:21px;font-weight:700;letter-spacing:.02em}
+  .choice button span{color:var(--muted);font-size:14px}
+  .choice button:hover{border-color:var(--ball)}
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;display:grid;gap:8px;cursor:pointer;background:var(--surface-2)}
+  .drop.over{border-color:var(--ball)}
+  .drop b{font-family:"Barlow Condensed",sans-serif;font-size:22px}
+  .drop span{color:var(--muted);font-size:14px}
+  .drop input{display:none}
+  .prog{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+  .prog i{display:block;height:100%;width:0;background:var(--ball);transition:width .3s}
+  .fname{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted)}
+  .guide{display:grid;gap:10px;margin-top:6px}
+  .guide .g{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)}
+  .guide .g i{width:30px;height:30px;border-radius:50%;background:var(--ball);color:#0B1020;display:grid;place-items:center;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:17px;font-style:normal}
+  .guide .g b{display:block;font-weight:600}
+  .guide .g span{color:var(--muted);font-size:14px}
+  .guide .g a{color:var(--text)}
+  .court{width:100%;height:auto;display:block;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
+
+  @media (min-width:700px){
+    .wrap{padding-inline:24px}
+    .hero{grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding-block:40px 16px}
+    .hero .actions{grid-template-columns:auto;justify-content:start;align-items:center}
+    .hero .note{text-align:left}
+    .btn{width:auto}
+    .steps{grid-template-columns:repeat(3,1fr)}
+    .step{grid-template-columns:1fr}
+    .step .n{grid-row:auto}
+    .dash{grid-template-columns:1.25fr 1fr}
+    .tech{grid-template-columns:repeat(3,1fr)}
+    .overlay{align-items:center;padding:24px}
+    .sheet{border-radius:22px;padding:28px}
+    .sheet .grab{display:none}
+    footer{grid-template-columns:1fr 1fr;justify-content:space-between}
+    section{padding-block:64px}
+  }
+  @media (min-width:900px){
+    nav{display:flex}
+    .phones{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;overflow:visible;margin-inline:0;padding-inline:0}
+    .ph-wrap{flex:auto}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .draw{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.8s ease-out .3s forwards}
+    @keyframes draw{to{stroke-dashoffset:0}}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#top">PACO<small>Padel Coach</small></a>
+    <nav><a href="#como">Cómo funciona</a><a href="#recibes">Qué recibes</a><a href="#perfil">Tu perfil</a><a href="#tech">Tecnología</a></nav>
+    <button class="btn small js-open" type="button">Análisis gratis</button>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div>
+        <div class="logo">PACO</div>
+        <div class="tag">Padel Coach powered by AI</div>
+        <p class="slogan">Watch your mistakes.<br>Follow your stats.<br><b>Get better.</b></p>
+        <p class="lead">Herramientas de pro para mejorar día a día. Desde la revisión 360° de tus partidos hasta estadísticas personalizadas y el mapa de evolución de tu carrera. Con Paco entiendes de verdad dónde estás parado.</p>
+        <div class="actions">
+          <button class="btn js-open" type="button">Quiero mi análisis gratis</button>
+          <span class="note">Los primeros 100 apuntados. Sin coste, sin tarjeta.</span>
+        </div>
+      </div>
+      <figure class="video">
+        <video id="demo" controls playsinline preload="metadata" poster="poster.jpg" src="demo.mp4"></video>
+        <figcaption>Revisión 360° de un punto real del Mundial FIP 2024. Así se ve tu partido con Paco.</figcaption>
+      </figure>
+    </div>
+    <div class="legend">
+      <span class="r"><i></i>Rojo: lo que pasó</span>
+      <span class="g"><i></i>Verde: lo que tenías que hacer</span>
+    </div>
+
+    <section id="como">
+      <div class="sec-head">
+        <p class="eyebrow">Cómo funciona</p>
+        <h2 style="margin-top:8px">Tres pasos. Nada que instalar en la pista.</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h3>Graba el partido</h3><p>Con el móvil, desde detrás del cristal de fondo y lo más alto posible. Un soporte con ventosas en el cristal lo resuelve.</p></div>
+        <div class="step"><div class="n">2</div><h3>Súbelo a Paco</h3><p>Nos dices si juegas a la izquierda o a la derecha. Paco identifica a tu compañero y a los rivales y sigue a los cuatro y a la bola.</p></div>
+        <div class="step"><div class="n">3</div><h3>Recibe tu revisión en 24 h</h3><p>El video con tus errores y la jugada correcta, las estadísticas del partido y tu informe, en el móvil.</p></div>
+      </div>
+    </section>
+
+    <section id="recibes">
+      <div class="sec-head">
+        <p class="eyebrow">Qué recibes después de cada partido</p>
+        <h2 style="margin-top:8px">Lo que te diría un buen profe si hubiera visto todo el partido.</h2>
+        <p>Desliza para ver las tres pantallas. <span class="example">Datos de ejemplo</span></p>
+      </div>
+      <div class="phones">
+
+        <div class="ph-wrap">
+          <div class="phone"><div class="screen">
+            <div class="sb"><span>9:41</span><span>●●● ᯤ ▮</span></div>
+            <div class="app-h"><b>Revisión 360°</b><span>Sáb 21 sep · 13:40 min</span></div>
+            <div class="app-body">
+              <div class="thumb"><img src="poster.jpg" alt="Momento del partido con el error marcado en rojo y la jugada correcta en verde"><div class="play"><i></i></div><span class="dur">13:40</span></div>
+              <div class="card">
+                <div class="t">12 momentos clave</div>
+                <div class="mom"><span class="tm">0:42</span><span class="d r"></span><span class="l">Posición tras el globo</span><span class="tag">Error</span></div>
+                <div class="mom"><span class="tm">2:15</span><span class="d r"></span><span class="l">Volea al cuerpo del rival</span><span class="tag">Error</span></div>
+                <div class="mom"><span class="tm">4:03</span><span class="d g"></span><span class="l">Bandeja profunda al rincón</span><span class="tag">Bien</span></div>
+                <div class="mom"><span class="tm">5:30</span><span class="d r"></span><span class="l">Globo corto desde el fondo</span><span class="tag">Error</span></div>
+              </div>
+              <div class="card"><div class="t">Paco dice</div><div style="margin-top:4px">En 5 de tus 8 puntos perdidos en la red estabas un paso demasiado adelante. Mira 0:42 y 5:30.</div></div>
+            </div>
+          </div></div>
+          <h3>Revisión 360° en video</h3>
+          <p>10 a 15 minutos. Tus errores en rojo y, en verde, qué tenías que hacer: dónde debía ir la bola, dónde tenías que estar.</p>
+        </div>
+
+        <div class="ph-wrap">
+          <div class="phone"><div class="screen">
+            <div class="sb"><span>9:41</span><span>●●● ᯤ ▮</span></div>
+            <div class="app-h"><b>Estadísticas</b><span>Sáb 21 sep</span></div>
+            <div class="app-body">
+              <div class="card score"><div><div class="t">Resultado</div><div class="s num">6-4 · 3-6 · 6-3</div></div><span class="pill g">Ganado</span></div>
+              <div class="seg"><span>Pareja</span><span class="on">Tú</span><span>Rivales</span></div>
+              <div class="card">
+                <div class="stat"><span class="lab">Winners</span><span class="v num">14<small>rival 9</small></span><div class="bars"><div class="bar" style="width:100%"></div><div class="bar b" style="width:64%"></div></div></div>
+                <div class="stat"><span class="lab">Errores no forzados</span><span class="v num">21<small>rival 27</small></span><div class="bars"><div class="bar" style="width:78%"></div><div class="bar b" style="width:100%"></div></div></div>
+                <div class="stat"><span class="lab">Dobles faltas</span><span class="v num">2<small>rival 4</small></span><div class="bars"><div class="bar" style="width:50%"></div><div class="bar b" style="width:100%"></div></div></div>
+                <div class="stat"><span class="lab">Puntos ganados en la red</span><span class="v num">61%</span><div class="bars"><div class="bar" style="width:61%"></div></div></div>
+                <div class="stat"><span class="lab">Puntos ganados desde el fondo</span><span class="v num">44%</span><div class="bars"><div class="bar" style="width:44%"></div></div></div>
+              </div>
+              <div class="card">
+                <div class="t">Tus golpes · % buenos</div>
+                <div class="stat"><span class="lab">Bandeja</span><span class="v num">78%</span><div class="bars"><div class="bar" style="width:78%"></div></div></div>
+                <div class="stat"><span class="lab">Volea</span><span class="v num">64%</span><div class="bars"><div class="bar" style="width:64%"></div></div></div>
+                <div class="stat"><span class="lab">Globo</span><span class="v num">55%</span><div class="bars"><div class="bar" style="width:55%"></div></div></div>
+              </div>
+            </div>
+          </div></div>
+          <h3>Estadísticas personalizadas</h3>
+          <p>De la pareja, tuyas y de los rivales. Winners, errores no forzados, dobles faltas, puntos en la red y desde el fondo, y cómo te salió cada golpe.</p>
+        </div>
+
+        <div class="ph-wrap">
+          <div class="phone"><div class="screen">
+            <div class="sb"><span>9:41</span><span>●●● ᯤ ▮</span></div>
+            <div class="app-h"><b>Informe de Paco</b><span>Sáb 21 sep</span></div>
+            <div class="app-body">
+              <div class="card">
+                <div class="t">Puntos fuertes</div>
+                <div class="rep"><i class="g"></i><div><b>Volea de derecha en la red</b><span>62% de puntos ganados cuando la usas</span></div></div>
+                <div class="rep"><i class="g"></i><div><b>Primer saque</b><span>78% dentro, y 6 de cada 10 te dan la red</span></div></div>
+                <div class="rep"><i class="g"></i><div><b>Bandeja profunda</b><span>Tu golpe más fiable: 78% buenas</span></div></div>
+              </div>
+              <div class="card">
+                <div class="t">A mejorar</div>
+                <div class="rep"><i class="r"></i><div><b>Posición tras el globo rival</b><span>11 puntos perdidos por quedarte pegado a la red</span></div></div>
+                <div class="rep"><i class="r"></i><div><b>Selección de tiro desde el fondo</b><span>El globo corto te costó 7 puntos</span></div></div>
+                <div class="rep"><i class="r"></i><div><b>Segundo saque</b><span>4 dobles faltas, todas en puntos importantes</span></div></div>
+              </div>
+              <div class="card goal"><div class="t">Objetivo para el próximo partido</div><p>Tras cada globo rival, un paso atrás y en diagonal antes de que bote.</p></div>
+            </div>
+          </div></div>
+          <h3>Informe de mejora</h3>
+          <p>Tres puntos fuertes, tres cosas a mejorar y un único objetivo para el próximo partido. Sin rodeos.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="perfil">
+      <div class="sec-head">
+        <p class="eyebrow">Mapa de evolución de tu carrera</p>
+        <h2 style="margin-top:8px">Lo que ningún profe puede darte: tu historial completo.</h2>
+        <p>Cada partido suma. Cómo evolucionas, con quién juegas mejor, qué lado te sienta más y dónde te colocas en la pista. <span class="example">Datos de ejemplo</span></p>
+      </div>
+      <div class="dash">
+
+        <div class="tile">
+          <div class="t">Errores no forzados por set · últimos 12 partidos</div>
+          <div class="hero-n"><span class="big num">5,8</span><span class="delta num">−36% en tres meses</span></div>
+          <svg viewBox="0 0 520 190" role="img" aria-label="Línea descendente de errores no forzados por set, de 9,1 a 5,8 en doce partidos">
+            <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B8CFF" stop-opacity=".35"/><stop offset="1" stop-color="#5B8CFF" stop-opacity="0"/></linearGradient></defs>
+            <g stroke="var(--line)" stroke-width="1"><line x1="40" y1="30" x2="510" y2="30"/><line x1="40" y1="75" x2="510" y2="75"/><line x1="40" y1="120" x2="510" y2="120"/><line x1="40" y1="165" x2="510" y2="165"/></g>
+            <g class="chart-text"><text x="34" y="34" text-anchor="end">10</text><text x="34" y="79" text-anchor="end">8</text><text x="34" y="124" text-anchor="end">6</text><text x="34" y="169" text-anchor="end">4</text></g>
+            <g class="chart-text"><text x="50" y="186">jul</text><text x="270" y="186" text-anchor="middle">ago</text><text x="500" y="186" text-anchor="end">sep</text></g>
+            <path fill="url(#ga)" d="M50,50 L92,62 L134,46 L176,78 L218,84 L260,96 L302,90 L344,110 L386,118 L428,104 L470,126 L500,124 L500,165 L50,165 Z"/>
+            <path class="draw" fill="none" stroke="#5B8CFF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" d="M50,50 L92,62 L134,46 L176,78 L218,84 L260,96 L302,90 L344,110 L386,118 L428,104 L470,126 L500,124"/>
+            <circle cx="50" cy="50" r="4.5" fill="#5B8CFF" stroke="var(--surface)" stroke-width="2"/>
+            <circle cx="500" cy="124" r="5.5" fill="#5B8CFF" stroke="var(--surface)" stroke-width="2"/>
+            <text class="chart-text" x="50" y="40" text-anchor="start" style="fill:var(--text);font-weight:600">9,1</text>
+            <text class="chart-text" x="500" y="112" text-anchor="end" style="fill:var(--text);font-weight:600">5,8</text>
+          </svg>
+          <p class="sub">Tu evolución partido a partido, también en winners, saque y cada golpe.</p>
+        </div>
+
+        <div class="tile">
+          <div class="t">Con quién juegas mejor · puntos ganados</div>
+          <div>
+            <div class="prow"><span class="name">Con Martín</span><span class="pct num">71%<small>7 partidos</small></span><div class="bar" style="width:71%;background:var(--bar-a)"></div></div>
+            <div class="prow"><span class="name">Con Lucía</span><span class="pct num">58%<small>12 partidos</small></span><div class="bar" style="width:58%;background:var(--bar-a)"></div></div>
+            <div class="prow"><span class="name">Con Diego</span><span class="pct num">47%<small>5 partidos</small></span><div class="bar" style="width:47%;background:var(--bar-a)"></div></div>
+            <div class="prow"><span class="name">Con Sofía</span><span class="pct num">40%<small>3 partidos</small></span><div class="bar" style="width:40%;background:var(--bar-a)"></div></div>
+          </div>
+          <p class="sub">Con Martín ganas más porque él cubre el centro y tú cierras en la red.</p>
+        </div>
+
+        <div class="tile">
+          <div class="t">Tu lado</div>
+          <div class="sides">
+            <div class="side best"><span class="lab">Derecha</span><span class="big num">64%</span><span class="sub num">ganados · 5,8 errores por set</span></div>
+            <div class="side"><span class="lab">Izquierda</span><span class="big num">47%</span><span class="sub num">ganados · 8,3 errores por set</span></div>
+          </div>
+          <p class="sub">Estadísticamente, la derecha te sienta mejor. En la izquierda pierdes más puntos con el remate.</p>
+        </div>
+
+        <div class="tile">
+          <div class="t">Dónde te colocas · puntos perdidos en la red</div>
+          <svg viewBox="0 0 520 250" role="img" aria-label="Media pista vista desde arriba con mapa de calor de tu posición y la zona recomendada">
+            <defs>
+              <radialGradient id="h1"><stop offset="0" stop-color="#FF5A5A" stop-opacity=".85"/><stop offset=".55" stop-color="#FF5A5A" stop-opacity=".35"/><stop offset="1" stop-color="#FF5A5A" stop-opacity="0"/></radialGradient>
+              <radialGradient id="h2"><stop offset="0" stop-color="#FF5A5A" stop-opacity=".5"/><stop offset="1" stop-color="#FF5A5A" stop-opacity="0"/></radialGradient>
+            </defs>
+            <rect x="20" y="20" width="480" height="210" rx="4" fill="var(--court)" opacity=".9"/>
+            <g stroke="#FFFFFF" stroke-width="2" opacity=".85" fill="none">
+              <rect x="20" y="20" width="480" height="210"/>
+              <line x1="20" y1="20" x2="20" y2="230" stroke-width="5"/>
+              <line x1="190" y1="20" x2="190" y2="230"/>
+              <line x1="190" y1="125" x2="500" y2="125"/>
+            </g>
+            <text class="chart-text" x="30" y="245">red</text>
+            <text class="chart-text" x="498" y="245" text-anchor="end">fondo</text>
+            <ellipse cx="62" cy="80" rx="60" ry="38" fill="url(#h1)"/>
+            <ellipse cx="70" cy="165" rx="70" ry="42" fill="url(#h1)"/>
+            <ellipse cx="150" cy="120" rx="55" ry="35" fill="url(#h2)"/>
+            <rect x="105" y="45" width="80" height="160" rx="10" fill="none" stroke="#3EE07A" stroke-width="3" stroke-dasharray="8 6"/>
+            <text class="chart-text" x="145" y="35" text-anchor="middle" style="fill:#3EE07A;font-weight:600">zona ideal</text>
+            <text class="chart-text" x="62" y="83" text-anchor="middle" style="fill:#FFFFFF;font-weight:600">11 pts</text>
+          </svg>
+          <p class="sub">Pierdes la mayoría de los puntos en la red pegado a ella. La zona verde es donde Paco te quiere ver tras el globo rival.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="tech">
+      <div class="sec-head">
+        <p class="eyebrow">Cómo lo hace Paco</p>
+        <h2 style="margin-top:8px">Visión por computadora sobre una pista que siempre mide lo mismo.</h2>
+        <p>La pista de pádel es un rectángulo fijo de 20 por 10 metros con cristales en posiciones conocidas. Eso permite reconstruir cada punto en 3D a partir de un solo móvil.</p>
+      </div>
+      <div class="tech">
+        <div class="item">
+          <div class="ico"><svg viewBox="0 0 40 40" fill="none" stroke="var(--ball)" stroke-width="2" stroke-linejoin="round"><path d="M4 30 L14 10 L36 10 L26 30 Z"/><path d="M14 10 L14 4 L36 4 L36 10"/><path d="M26 30 L26 36 L4 36 L4 30"/><path d="M9 20 L31 20"/></svg></div>
+          <h3>Reconstrucción 3D de la pista</h3>
+          <p>Paco calibra la cámara con las líneas y los cristales y convierte el video plano en un gemelo digital del punto, como el de arriba.</p>
+          <div class="specs"><span class="spec">20 × 10 m</span><span class="spec">Cristales 3 m</span><span class="spec">Un solo móvil</span></div>
+        </div>
+        <div class="item">
+          <div class="ico"><svg viewBox="0 0 40 40" fill="none" stroke="var(--ball)" stroke-width="2" stroke-linecap="round"><circle cx="20" cy="9" r="4"/><path d="M20 13 L20 24 M20 17 L12 22 M20 17 L28 22 M20 24 L14 34 M20 24 L26 34"/><circle cx="33" cy="6" r="2.5" fill="var(--ball)" stroke="none"/></svg></div>
+          <h3>Seguimiento de los cuatro y de la bola</h3>
+          <p>Postura y posición de cada jugador, trayectoria, velocidad y altura de la bola en cada golpe, con los botes en suelo y cristal.</p>
+          <div class="specs"><span class="spec">30 fps</span><span class="spec">4 jugadores</span><span class="spec">Bola + botes</span></div>
+        </div>
+        <div class="item">
+          <div class="ico"><svg viewBox="0 0 40 40" fill="none" stroke="var(--ball)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 32 C12 10, 26 10, 34 32"/><path d="M6 32 L34 32"/><path d="M14 32 L14 25 M20 32 L20 20 M26 32 L26 25"/><circle cx="20" cy="12" r="3" fill="var(--ball)" stroke="none"/></svg></div>
+          <h3>Motor táctico de pádel</h3>
+          <p>Reglas escritas con entrenadores: qué golpe tocaba, dónde tenía que ir y dónde debías estar. Es lo que convierte datos en consejos.</p>
+          <div class="specs"><span class="spec">Selección de tiro</span><span class="spec">Posición</span><span class="spec">Patrones</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" id="apuntate">
+      <p class="eyebrow">Lista de espera</p>
+      <div class="plazas">100</div>
+      <h2>Los primeros 100 juegan gratis.</h2>
+      <p>Apúntate y Paco revisa un partido tuyo completo sin coste. Si ya tienes el video, lo subes hoy. Si no, tienes 10 días para grabarlo.</p>
+      <button class="btn js-open" type="button">Quiero mi análisis gratis</button>
+    </section>
+  </main>
+
+  <footer>
+    <span>Paco · Padel Coach powered by AI · proyecto en fase de validación · 2026</span>
+    <span>Hecho por jugadores de pádel que pierden más de lo que quisieran.</span>
+  </footer>
+</div>
+
+<!-- Flujo: suscripción → video -->
+<div class="overlay" id="flow" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="flow-title">
+    <div class="grab"></div>
+    <button class="close" type="button" id="flow-close" aria-label="Cerrar">×</button>
+
+    <div id="step1">
+      <h3 id="flow-title">Tu análisis gratis</h3>
+      <p class="sub">Apúntate y reserva tu plaza entre los primeros 100. Después subes el video.</p>
+      <div class="stepper"><i class="on"></i><i></i><i></i></div>
+      <form id="form" novalidate>
+        <div class="row2">
+          <div class="field"><label for="nombre">Nombre</label><input id="nombre" name="nombre" type="text" autocomplete="given-name" required></div>
+          <div class="field"><label for="apellido">Apellido</label><input id="apellido" name="apellido" type="text" autocomplete="family-name" required></div>
+        </div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" required></div>
+        <div class="hp" aria-hidden="true"><label for="web">Web</label><input id="web" name="web" type="text" tabindex="-1" autocomplete="off"></div>
+        <button class="btn" type="submit" id="submit">Reservar mi plaza</button>
+        <p class="consent">Solo usaremos tu email para tu análisis. Nada de spam.</p>
+        <div id="msg1" class="msg" hidden></div>
+      </form>
+    </div>
+
+    <div id="step2" hidden>
+      <h3>Listo, <span id="hola"></span>. Tienes plaza.</h3>
+      <p class="sub">¿Tienes ya el video de un partido tuyo?</p>
+      <div class="stepper"><i class="on"></i><i class="on"></i><i></i></div>
+      <div class="choice">
+        <button type="button" id="has-video"><b>Sí, lo subo ahora</b><span>MP4 o MOV, el partido completo. Mejor con wifi.</span></button>
+        <button type="button" id="no-video"><b>Todavía no lo tengo</b><span>Tienes 10 días para grabarlo y subirlo gratis. Te mandamos el enlace por email.</span></button>
+      </div>
+    </div>
+
+    <div id="step3" hidden>
+      <h3>Sube tu partido</h3>
+      <p class="sub">Para que Paco pueda analizarlo, el video tiene que estar grabado así:</p>
+      <div class="stepper"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      <svg class="court" viewBox="0 0 360 200" role="img" aria-label="Esquema: móvil detrás del cristal de fondo, centrado y en alto, mirando a toda la pista" style="margin-top:10px">
+        <rect x="70" y="18" width="220" height="130" rx="4" fill="var(--court)" opacity=".9"/>
+        <g stroke="#FFFFFF" stroke-width="1.6" fill="none" opacity=".85"><rect x="70" y="18" width="220" height="130"/><line x1="70" y1="83" x2="290" y2="83" stroke-width="3"/><line x1="180" y1="18" x2="180" y2="148"/><line x1="70" y1="50" x2="290" y2="50"/><line x1="70" y1="116" x2="290" y2="116"/></g>
+        <g fill="none" stroke="var(--ball)" stroke-width="2" stroke-dasharray="5 4"><path d="M180 178 L70 18"/><path d="M180 178 L290 18"/></g>
+        <rect x="168" y="166" width="24" height="16" rx="3" fill="var(--ball)"/>
+        <circle cx="180" cy="174" r="2.5" fill="#0B1020"/>
+        <text x="180" y="196" text-anchor="middle" style="font:600 11px Barlow,sans-serif;fill:var(--muted)">móvil detrás del cristal de fondo, centrado y en alto</text>
+        <text x="180" y="12" text-anchor="middle" style="font:600 10px Barlow,sans-serif;fill:var(--muted)">se tiene que ver el cristal de enfrente entero</text>
+      </svg>
+      <div class="guide">
+        <div class="g"><i>1</i><div><b>Detrás del cristal de fondo, centrado</b><span>Justo en el medio, pegado al cristal, mirando hacia la pista completa.</span></div></div>
+        <div class="g"><i>2</i><div><b>Lo más alto que puedas</b><span>Un soporte con ventosas en el cristal, como <a href="https://www.amazon.es/dp/B0G2SFJPKD" target="_blank" rel="noopener">este de Amazon</a>, colocado a 2 metros o más. Sin soporte, apoyado en lo alto de la valla.</span></div></div>
+        <div class="g"><i>3</i><div><b>Horizontal, sin zoom, sin moverlo</b><span>Que se vean las cuatro esquinas y el cristal de enfrente entero. Bloquea el enfoque y no lo toques hasta el final.</span></div></div>
+        <div class="g"><i>4</i><div><b>Partido completo en 1080p</b><span>Batería llena y unos 8 GB libres para hora y media. Modo avión para que no te corte una llamada.</span></div></div>
+      </div>
+      <form id="upform" style="margin-top:14px" novalidate>
+        <div class="field"><label for="lado">¿En qué lado juegas en este partido?</label>
+          <select id="lado" name="lado"><option value="">Elige uno</option><option>Izquierda (revés)</option><option>Derecha (drive)</option></select>
+        </div>
+        <label class="drop" id="drop" for="file"><b>Toca para elegir el video</b><span>o arrástralo aquí · MP4 o MOV · hasta 10 GB</span><input id="file" type="file" accept="video/mp4,video/quicktime,.mp4,.mov"></label>
+        <div id="upstate" hidden>
+          <div class="fname"><span id="fname"></span><span id="fpct" class="num">0%</span></div>
+          <div class="prog" style="margin-top:6px"><i id="fbar"></i></div>
+        </div>
+        <div id="msg3" class="msg" hidden></div>
+      </form>
+    </div>
+
+    <div id="step4" hidden>
+      <h3>Perfecto, <span id="hola2"></span>.</h3>
+      <p class="sub" id="bye"></p>
+      <div class="stepper"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+      <div class="guide" id="guide-later">
+        <div class="g"><i>1</i><div><b>Detrás del cristal de fondo, centrado y en alto</b><span>Un soporte con ventosas en el cristal, como <a href="https://www.amazon.es/dp/B0G2SFJPKD" target="_blank" rel="noopener">este de Amazon</a>, a 2 metros o más.</span></div></div>
+        <div class="g"><i>2</i><div><b>Horizontal, sin zoom, sin moverlo</b><span>Que se vean las cuatro esquinas y el cristal de enfrente entero.</span></div></div>
+        <div class="g"><i>3</i><div><b>Partido completo en 1080p</b><span>Batería llena, unos 8 GB libres y modo avión.</span></div></div>
+      </div>
+      <button class="btn" type="button" id="done" style="margin-top:16px">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase (compat). Sin FIREBASE_CONFIG la página funciona en modo demo. -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script>
+  // === Configuración ===
+  // Pega aquí el objeto de configuración web del proyecto Firebase (apiKey, authDomain, projectId, storageBucket, appId).
+  // Mientras sea null, la página corre en MODO DEMO: no envía nada, simula la subida y guarda en el navegador.
+  var FIREBASE_CONFIG = null;
+
+  var db = null, storage = null, DEMO = true;
+  try {
+    if (FIREBASE_CONFIG && window.firebase) {
+      firebase.initializeApp(FIREBASE_CONFIG); db = firebase.firestore(); storage = firebase.storage(); DEMO = false;
+    }
+  } catch (e) { console.warn("Firebase no disponible, modo demo", e); }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var flow = $("flow"), steps = ["step1","step2","step3","step4"];
+  var signup = null; // {id, nombre, apellido, email}
+  try { signup = JSON.parse(localStorage.getItem("paco_signup") || "null"); } catch (_) {}
+
+  function go(step) { steps.forEach(function (s) { $(s).hidden = (s !== step); }); flow.scrollTop = 0; }
+  function open() {
+    flow.hidden = false; document.body.classList.add("locked");
+    if (signup && signup.id) { $("hola").textContent = signup.nombre; go("step2"); }
+    else { go("step1"); setTimeout(function(){ $("nombre").focus(); }, 50); }
+  }
+  function close() { flow.hidden = true; document.body.classList.remove("locked"); }
+  document.querySelectorAll(".js-open").forEach(function (b) { b.addEventListener("click", open); });
+  $("flow-close").addEventListener("click", close);
+  $("done").addEventListener("click", close);
+  flow.addEventListener("click", function (e) { if (e.target === flow) close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !flow.hidden) close(); });
+  function show(id, kind, text) { var m = $(id); m.className = "msg " + kind; m.textContent = text; m.hidden = false; }
+
+  // --- Paso 1: suscripción ---
+  var form = $("form"), btn = $("submit");
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (form.web.value) return;
+    var nombre = form.nombre.value.trim(), apellido = form.apellido.value.trim(), email = form.email.value.trim().toLowerCase();
+    if (!nombre) { show("msg1","err","Dinos tu nombre."); form.nombre.focus(); return; }
+    if (!apellido) { show("msg1","err","Y tu apellido."); form.apellido.focus(); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { show("msg1","err","Ese email no parece válido. Revísalo."); form.email.focus(); return; }
+    var data = { nombre: nombre, apellido: apellido, email: email, tieneVideo: null, videoPath: null, estado: "apuntado", origen: location.href, ua: navigator.userAgent, creado: new Date().toISOString() };
+    btn.disabled = true; btn.textContent = "Guardando…";
+    try {
+      var id;
+      if (!DEMO) {
+        var ref = await db.collection("signups").add(Object.assign({}, data, { creado: firebase.firestore.FieldValue.serverTimestamp() }));
+        id = ref.id;
+      } else { id = "demo-" + Date.now(); }
+      signup = { id: id, nombre: nombre, apellido: apellido, email: email };
+      try { localStorage.setItem("paco_signup", JSON.stringify(signup)); } catch (_) {}
+      $("hola").textContent = nombre; $("hola2").textContent = nombre; go("step2");
+    } catch (err) {
+      console.error(err); show("msg1","err","No hemos podido guardar tu plaza. Inténtalo de nuevo en un minuto.");
+    } finally { btn.disabled = false; btn.textContent = "Reservar mi plaza"; }
+  });
+
+  async function updateSignup(patch) {
+    if (DEMO || !signup || !signup.id) return;
+    try { await db.collection("signups").doc(signup.id).update(patch); } catch (e) { console.warn(e); }
+  }
+
+  // --- Paso 2: ¿tienes video? ---
+  $("has-video").addEventListener("click", function () { updateSignup({ tieneVideo: true }); go("step3"); });
+  $("no-video").addEventListener("click", function () {
+    updateSignup({ tieneVideo: false, estado: "pendiente-video" });
+    $("hola2").textContent = signup ? signup.nombre : "";
+    $("bye").textContent = "Tienes 10 días para grabar un partido y subirlo gratis. Te mandamos el enlace a " + (signup ? signup.email : "tu email") + ". Así tiene que estar grabado:";
+    $("guide-later").hidden = false; go("step4");
+  });
+
+  // --- Paso 3: subida ---
+  var drop = $("drop"), file = $("file");
+  ["dragenter","dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave","drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { if (e.dataTransfer.files[0]) startUpload(e.dataTransfer.files[0]); });
+  file.addEventListener("change", function () { if (file.files[0]) startUpload(file.files[0]); });
+
+  function fmt(b) { return b > 1e9 ? (b/1e9).toFixed(1) + " GB" : Math.round(b/1e6) + " MB"; }
+  function setProgress(p) { $("fpct").textContent = Math.round(p) + "%"; $("fbar").style.width = p + "%"; }
+
+  function startUpload(f) {
+    var ok = /\.(mp4|mov)$/i.test(f.name) || /video\/(mp4|quicktime)/.test(f.type);
+    if (!ok) { show("msg3","err","Solo MP4 o MOV. Si lo grabaste con el móvil, es uno de los dos."); return; }
+    if (f.size > 10 * 1024 * 1024 * 1024) { show("msg3","err","El archivo pasa de 10 GB. Graba en 1080p, no en 4K."); return; }
+    if (!$("lado").value) { show("msg3","err","Dinos en qué lado juegas en este partido."); $("lado").focus(); return; }
+    $("msg3").hidden = true; $("upstate").hidden = false; $("fname").textContent = f.name + " · " + fmt(f.size); setProgress(0);
+    drop.style.display = "none";
+    var meta = { lado: $("lado").value, nombreArchivo: f.name, bytes: f.size };
+    if (DEMO) { // simulación
+      var p = 0, t = setInterval(function () { p = Math.min(100, p + 4 + Math.random() * 6); setProgress(p); if (p >= 100) { clearInterval(t); finishUpload("demo/" + f.name, meta); } }, 120);
+      return;
+    }
+    var path = "uploads/" + signup.id + "/" + Date.now() + "_" + f.name.replace(/[^\w.\-]+/g, "_");
+    var task = storage.ref(path).put(f, { contentType: f.type || "video/mp4", customMetadata: { signupId: signup.id, email: signup.email, lado: meta.lado } });
+    task.on("state_changed", function (s) { setProgress(s.bytesTransferred / s.totalBytes * 100); }, function (err) {
+      console.error(err); show("msg3","err","La subida se cortó. Vuelve a elegir el archivo y la retomamos."); drop.style.display = "";
+    }, function () { finishUpload(path, meta); });
+  }
+  function finishUpload(path, meta) {
+    updateSignup(Object.assign({ videoPath: path, estado: "video-subido", subido: DEMO ? new Date().toISOString() : firebase.firestore.FieldValue.serverTimestamp() }, meta));
+    $("hola2").textContent = signup ? signup.nombre : "";
+    $("bye").textContent = "Video recibido. Paco se pone con él y en 24 horas te llega la revisión a " + (signup ? signup.email : "tu email") + ".";
+    $("guide-later").hidden = true; go("step4");
+  }
+</script>
+</body>
+</html>

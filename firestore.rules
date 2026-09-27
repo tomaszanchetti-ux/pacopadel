@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Lista de espera: cualquiera puede apuntarse (create) con campos validados.
+    // Nadie lee desde la web; se lee desde la consola de Firebase.
+    match /signups/{id} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasAll(['nombre','apellido','email','estado','creado'])
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() > 0 && request.resource.data.nombre.size() < 80
+        && request.resource.data.apellido is string && request.resource.data.apellido.size() > 0 && request.resource.data.apellido.size() < 80
+        && request.resource.data.email is string && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && request.resource.data.estado == 'apuntado';
+      // Solo se pueden tocar los campos del video, nunca nombre/email.
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['tieneVideo','videoPath','estado','lado','nombreArchivo','bytes','subido']);
+      allow delete: if false;
+    }
+  }
+}
