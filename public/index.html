@@ -537,6 +537,7 @@
         <div class="g"><i>3</i><div><b>Horizontal, sin zoom, sin moverlo</b><span>Que se vean las cuatro esquinas y el cristal de enfrente entero. Bloquea el enfoque y no lo toques hasta el final.</span></div></div>
         <div class="g"><i>4</i><div><b>Partido completo en 1080p</b><span>Batería llena y unos 8 GB libres para hora y media. Modo avión para que no te corte una llamada.</span></div></div>
       </div>
+      <div id="upnote" class="msg ok" style="margin-top:14px" hidden>Plaza reservada. Estamos abriendo la subida de videos: en las próximas 48 horas te mandamos el enlace por email para subir tu partido.</div>
       <form id="upform" style="margin-top:14px" novalidate>
         <div class="field"><label for="lado">¿En qué lado juegas en este partido?</label>
           <select id="lado" name="lado"><option value="">Elige uno</option><option>Izquierda (revés)</option><option>Derecha (drive)</option></select>
@@ -572,7 +573,16 @@
   // === Configuración ===
   // Pega aquí el objeto de configuración web del proyecto Firebase (apiKey, authDomain, projectId, storageBucket, appId).
   // Mientras sea null, la página corre en MODO DEMO: no envía nada, simula la subida y guarda en el navegador.
-  var FIREBASE_CONFIG = null;
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBnousGZXFEZJK7ppYCP6JSCa-zsxA6ssU",
+    authDomain: "paco-padel-coach.firebaseapp.com",
+    projectId: "paco-padel-coach",
+    storageBucket: "paco-padel-coach.firebasestorage.app",
+    appId: "1:1047345513877:web:0f4139c5d954e178d2e29c"
+  };
+  // Subida de videos: requiere el bucket de Storage (plan Blaze). Mientras esté en false,
+  // quien ya tiene video queda marcado y recibe el enlace de subida por email.
+  var UPLOADS_ENABLED = false;
 
   var db = null, storage = null, DEMO = true;
   try {
@@ -631,7 +641,12 @@
   }
 
   // --- Paso 2: ¿tienes video? ---
-  $("has-video").addEventListener("click", function () { updateSignup({ tieneVideo: true }); go("step3"); });
+  $("has-video").addEventListener("click", function () {
+    if (UPLOADS_ENABLED && !DEMO) { updateSignup({ tieneVideo: true }); go("step3"); return; }
+    if (DEMO) { go("step3"); return; }
+    updateSignup({ tieneVideo: true, estado: "pendiente-subida" });
+    $("upform").hidden = true; $("upnote").hidden = false; go("step3");
+  });
   $("no-video").addEventListener("click", function () {
     updateSignup({ tieneVideo: false, estado: "pendiente-video" });
     $("hola2").textContent = signup ? signup.nombre : "";
