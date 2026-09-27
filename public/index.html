@@ -597,12 +597,12 @@
     apiKey: "AIzaSyBnousGZXFEZJK7ppYCP6JSCa-zsxA6ssU",
     authDomain: "paco-padel-coach.firebaseapp.com",
     projectId: "paco-padel-coach",
-    storageBucket: "paco-padel-coach.firebasestorage.app",
+    storageBucket: "paco-padel-coach-videos",
     appId: "1:1047345513877:web:0f4139c5d954e178d2e29c"
   };
   // Subida de videos: requiere el bucket de Storage (plan Blaze). Mientras esté en false,
   // quien ya tiene video queda marcado y recibe el enlace de subida por email.
-  var UPLOADS_ENABLED = false;
+  var UPLOADS_ENABLED = true;
 
   var db = null, storage = null, DEMO = true;
   try {
