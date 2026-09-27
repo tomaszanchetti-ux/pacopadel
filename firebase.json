@@ -9,5 +9,5 @@
     ]
   },
   "firestore": { "rules": "firestore.rules" },
-  "storage": { "bucket": "paco-padel-coach-videos", "rules": "storage.rules" }
+  "storage": [ { "bucket": "paco-padel-coach-videos", "rules": "storage.rules" } ]
 }
